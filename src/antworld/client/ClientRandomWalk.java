@@ -1,8 +1,6 @@
 package antworld.client;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Random;
@@ -18,9 +16,9 @@ import antworld.data.AntAction.AntActionType;
 
 public class ClientRandomWalk
 {
-  private static final boolean DEBUG = false;
-  private static final TeamNameEnum myTeam = TeamNameEnum.RANDOM_WALKERS;
-  private static final long password = 962740848319L;//Each team has been assigned a random password.
+  private static final boolean DEBUG = true;
+  private static final TeamNameEnum myTeam = TeamNameEnum.Antithesis;
+  private static final long password = 662985659947L;//Each team has been assigned a random password.
   private ObjectInputStream inputStream = null;
   private ObjectOutputStream outputStream = null;
   private boolean isConnected = false;
@@ -41,6 +39,8 @@ public class ClientRandomWalk
       isConnected = openConnection(host, portNumber);
     }
     CommData data = chooseNest();
+    
+    
     mainGameLoop(data);
     closeAll();
   }
@@ -73,7 +73,7 @@ public class ClientRandomWalk
     }
     catch (IOException e)
     {
-      System.err.println("ClientRandomWalk Error: Could not open i/o streams");
+      System.err.println("Antithesis Error: Could not open i/o streams");
       e.printStackTrace();
       return false;
     }
@@ -100,8 +100,17 @@ public class ClientRandomWalk
     }
   }
 
+  public static String convertStreamToString(java.io.InputStream is) 
+  {
+    @SuppressWarnings("resource")
+    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+    return s.hasNext() ? s.next() : "";
+   }
+  
   public CommData chooseNest()
   {
+    
+    
     while (myNestName == null)
     {
       try { Thread.sleep(100); } catch (InterruptedException e1) {}
@@ -114,13 +123,19 @@ public class ClientRandomWalk
       {
         try
         {
+          outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+          inputStream = new ObjectInputStream(clientSocket.getInputStream());
           if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
           CommData recvData = (CommData) inputStream.readObject();
+          
+          System.out.println(convertStreamToString(inputStream)); 
+          
           if (DEBUG) System.out.println("ClientRandomWalk: recived <<<<<<<<<"+inputStream.available()+"<...\n" + recvData);
           
           if (recvData.errorMsg != null)
           {
-            System.err.println("ClientRandomWalk***ERROR***: " + recvData.errorMsg);
+            System.err.println("ERROR @ LINE 124!!!! \n***ERROR***: " + recvData.errorMsg);
+            System.out.println("Did not receive ");
             continue;
           }
   
@@ -206,7 +221,7 @@ public class ClientRandomWalk
     }
     catch (IOException e)
     {
-      System.err.println("ClientRandomWalk***ERROR***: client read failed");
+      System.err.println("ClientRandomWalk***ERROR***: UNABLE TO SEND WRITE REQUEST");
       e.printStackTrace();
       try { Thread.sleep(1000); } catch (InterruptedException e1) {}
       return false;
@@ -248,7 +263,7 @@ public class ClientRandomWalk
   public static void main(String[] args)
   {
     
-    String serverHost = "localhost";
+    String serverHost = "b146-76";
     System.out.println(args.length);
     if (args.length > 0) serverHost = args[0];
     
