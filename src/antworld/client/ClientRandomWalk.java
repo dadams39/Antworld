@@ -8,6 +8,16 @@ import java.net.UnknownHostException;
 import java.util.Random;
 
 import antworld.data.AntAction;
+/*****************************************/
+/* Antworld Battle Project               */
+/* Team Antithesis                       */
+/* Contributors Danny Adams &            */
+/* William Jennings                      */
+/* Updated September 2, 2014             */
+/*****************************************/
+
+
+
 import antworld.data.AntData;
 import antworld.data.CommData;
 import antworld.data.Constants;
@@ -16,11 +26,22 @@ import antworld.data.NestNameEnum;
 import antworld.data.TeamNameEnum;
 import antworld.data.AntAction.AntActionType;
 
+
+
+
+
+
 public class ClientRandomWalk
+/********************************************/
+/* Status: Network Connection Established   */
+/* Artificial Intelligence: Non-Functional  */
+/* Display capabilities:  None              */
+/* Gui Interfaces: None                     */
+/********************************************/
 {
-  private static final boolean DEBUG = false;
-  private static final TeamNameEnum myTeam = TeamNameEnum.RANDOM_WALKERS;
-  private static final long password = 962740848319L;//Each team has been assigned a random password.
+  private static final boolean DEBUG = true;
+  private static final TeamNameEnum myTeam = TeamNameEnum.Antithesis;
+  private static final long password = 662985659947L;
   private ObjectInputStream inputStream = null;
   private ObjectOutputStream outputStream = null;
   private boolean isConnected = false;
@@ -153,7 +174,7 @@ public class ClientRandomWalk
     {
       try
       {
-        if (DEBUG) System.out.println("ClientRandomWalk: chooseActions: " + myNestName);
+        if (DEBUG) System.out.println("Antithesis: chooseActions: " + myNestName);
 
         chooseActionsOfAllAnts(data);
 
@@ -250,10 +271,11 @@ public class ClientRandomWalk
   {
     
     String serverHost = "b146-76";
-    //System.out.println(args.length);
+    
     if (args.length > 0) serverHost = args[0];
     
     new ClientRandomWalk(serverHost, Constants.PORT);
   }
 
 }
+
