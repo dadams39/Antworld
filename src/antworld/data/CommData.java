@@ -7,6 +7,9 @@ import java.util.HashSet;
 // TODO: Auto-generated Javadoc
 /**
  * The Class CommData.
+ *!!!!!!!!!! DO NOT MODIFY ANYTHING IN THIS CLASS !!!!!!!!!!<br>
+ * This class is serialized across a network socket. Any modifications will
+ * prevent the server from being able to read this class.<br><br>
  */
 public class CommData implements Serializable
 {
