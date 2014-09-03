@@ -1,5 +1,13 @@
 package antworld.client;
 
+/*********************************************/
+/* Antworld Battle Project                   */
+/* Team Antithesis                           */
+/* Contributors Danny Adams &                */
+/* William Jennings                          */
+/* Updated September 2, 2014                 */
+/* Interfacing w/ clientPack_2014_09_02.zip  */
+/*********************************************/
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,14 +16,6 @@ import java.net.UnknownHostException;
 import java.util.Random;
 
 import antworld.data.AntAction;
-/*****************************************/
-/* Antworld Battle Project               */
-/* Team Antithesis                       */
-/* Contributors Danny Adams &            */
-/* William Jennings                      */
-/* Updated September 2, 2014             */
-/*****************************************/
-
 import antworld.data.AntData;
 import antworld.data.CommData;
 import antworld.data.Constants;
@@ -28,7 +28,7 @@ public class ClientRandomWalk
 /********************************************/
 /* Status: Network Connection Established   */
 /* Artificial Intelligence: Non-Functional  */
-/* Display capabilities:  None              */
+/* Display capabilities:  JTable enabled    */
 /* Gui Interfaces: None                     */
 /********************************************/
 {
@@ -40,17 +40,24 @@ public class ClientRandomWalk
   private Dashboard mainFrame = null;
   private boolean isConnected = false;
   private NestNameEnum myNestName = null;
-  private int centerX, centerY;
- 
+  private int refreshCounter, centerX, centerY;
+  private int refreshRate = 125;
 
   private Socket clientSocket;
 
   private static Random random = Constants.random;
 
   public ClientRandomWalk(String host, int portNumber)
+  /************************************************/
+  /* ClientRandomWalk(String host, int portNumber */
+  /* @ author: Joel Castellanos                   */
+  /* @ param: String host, int port               */
+  /*   Basic constructor for Antworld Project     */
+  /************************************************/ 
   {
     System.out.println("Starting ClientRandomWalk: " + System.currentTimeMillis());
     isConnected = false;
+    refreshCounter = 0;
     while (!isConnected)
     {
       isConnected = openConnection(host, portNumber);
@@ -63,8 +70,14 @@ public class ClientRandomWalk
   }
 
   private boolean openConnection(String host, int portNumber)
+  /************************************************/
+  /* openConnection(String host, int portNumber   */
+  /* @ author: Joel Castellanos                   */
+  /* @ param: String host, int port               */
+  /* @ returns: boolean                           */
+  /*   Starts connection to host server           */
+  /************************************************/ 
   {
-
     try
     {
       clientSocket = new Socket(host, portNumber);
@@ -94,12 +107,16 @@ public class ClientRandomWalk
       e.printStackTrace();
       return false;
     }
-
     return true;
-
   }
 
   public void closeAll()
+  /************************************************/
+  /* closeAll()                                   */
+  /* @ author: Joel Castellanos                   */
+  /* @ param: N/A                                 */
+  /*   Method closes out connection to server/game*/
+  /************************************************/ 
   {
     System.out.println("ClientRandomWalk.closeAll()");
     {
@@ -118,15 +135,21 @@ public class ClientRandomWalk
   }
 
   public CommData chooseNest()
+  /************************************************/
+  /* chooseNest()                                 */
+  /* @ author: Joel Castellanos                   */
+  /* @ param: String host, int port               */
+  /*   Assigns team to random nest in world map   */
+  /************************************************/ 
   {
     while (myNestName == null)
     {
       try { Thread.sleep(100); } catch (InterruptedException e1) {}
-        
+
       NestNameEnum requestedNest = NestNameEnum.values()[random.nextInt(NestNameEnum.SIZE)];
       CommData data = new CommData(requestedNest, myTeam);
       data.password = password;
-      
+
       if( sendCommData(data) )
       {
         try
@@ -134,19 +157,19 @@ public class ClientRandomWalk
           if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
           CommData recvData = (CommData) inputStream.readObject();
           if (DEBUG) System.out.println("ClientRandomWalk: recived <<<<<<<<<"+inputStream.available()+"<...\n" + recvData);
-          
+
           if (recvData.errorMsg != null)
           {
             System.err.println("ClientRandomWalk***ERROR***: " + recvData.errorMsg);
             continue;
           }
-  
+
           if ((myNestName == null) && (recvData.myTeam == myTeam))
           { myNestName = recvData.myNest;
-            centerX = recvData.nestData[myNestName.ordinal()].centerX;
-            centerY = recvData.nestData[myNestName.ordinal()].centerY;
-            System.out.println("ClientRandomWalk: !!!!!Nest Request Accepted!!!! " + myNestName);
-            return recvData;
+          centerX = recvData.nestData[myNestName.ordinal()].centerX;
+          centerY = recvData.nestData[myNestName.ordinal()].centerY;
+          System.out.println("ClientRandomWalk: !!!!!Nest Request Accepted!!!! " + myNestName);
+          return recvData;
           }
         }
         catch (IOException e)
@@ -162,8 +185,18 @@ public class ClientRandomWalk
     }
     return null;
   }
-    
+
   public void mainGameLoop(CommData data)
+  /************************************************/
+  /* mainGameLoop(CommData data)                  */
+  /* @ author: Joel Castellanos                   */
+  /* @ modified by CS351 Team.                    */
+  /* @ param: CommData object                     */
+  /*   Basic manipulator for Antworld Project     */
+  /*   team movements.                            */
+  /*   Method may call other methods contained in */
+  /*   client package.                            */
+  /************************************************/ 
   {
     while (true)
     {
@@ -174,26 +207,32 @@ public class ClientRandomWalk
         chooseActionsOfAllAnts(data);
 
         CommData sendData = data.packageForSendToServer();
-        
+
         //Resets password to 0 for internet security
         sendData.password = 0;
         
+
         //System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
         outputStream.writeObject(sendData);
         outputStream.flush();
         outputStream.reset();
-        // Create an instance of the test application
-        mainFrame.updateGrid(data);
-        mainFrame.setVisible( true );
-      
-       
+        
+        //Displays Table for Ant Tracking
+        if(refreshCounter % refreshRate == 0)
+        {
+          mainFrame.updateTable(data);
+          mainFrame.setVisible (true);
+          refreshCounter = 0;
+        }
+        
+        refreshCounter++;
 
         if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
         CommData recivedData = (CommData) inputStream.readObject();
         if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + recivedData);
         data = recivedData;
-  
-        
+        if (DEBUG) System.out.println("refreshCounter:" + Integer.toString(refreshCounter));
+
         if ((myNestName == null) || (data.myTeam != myTeam))
         {
           System.err.println("ClientRandomWalk: !!!!ERROR!!!! " + myNestName);
@@ -215,11 +254,11 @@ public class ClientRandomWalk
 
     }
   }
-  
-  
+
+
   private boolean sendCommData(CommData data)
   {
-    
+
     CommData sendData = data.packageForSendToServer();
     try
     {
@@ -237,10 +276,20 @@ public class ClientRandomWalk
     }
 
     return true;
-    
+
   }
 
   private void chooseActionsOfAllAnts(CommData commData)
+  /************************************************/
+  /* chooseActionsOfAllAnts(CommData data)        */
+  /* @ author: Joel Castellanos                   */
+  /* @ modified by CS351 Team.                    */
+  /* @ param: CommData object                     */
+  /*   Mutatator for Antworld Project. Generic    */
+  /*   ant commands movements. Ants will not      */
+  /*   bring any interact with food if this method*/
+  /*   is called, but location will change.       */
+  /************************************************/ 
   {
     for (AntData ant : commData.myAntList)
     {
@@ -252,7 +301,7 @@ public class ClientRandomWalk
   private AntAction chooseAction(CommData data, AntData ant)
   {
     AntAction action = new AntAction(AntActionType.STASIS);
-    
+
     if (ant.ticksUntilNextAction > 0) return action;
 
     if (ant.underground)
@@ -271,15 +320,15 @@ public class ClientRandomWalk
 
   public static void main(String[] args)
   {
-    
-    String serverHost = "b146-76";
-    
+
+    String serverHost = "b146-75";
+
     if (args.length > 0) serverHost = args[0];
-    
+
     new ClientRandomWalk(serverHost, Constants.PORT); // Create an instance of the test application
- 
-    
-    
+
+
+
   }
 
 }
