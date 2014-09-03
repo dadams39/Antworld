@@ -16,8 +16,6 @@ import antworld.data.AntAction;
 /* Updated September 2, 2014             */
 /*****************************************/
 
-
-
 import antworld.data.AntData;
 import antworld.data.CommData;
 import antworld.data.Constants;
@@ -25,11 +23,6 @@ import antworld.data.Direction;
 import antworld.data.NestNameEnum;
 import antworld.data.TeamNameEnum;
 import antworld.data.AntAction.AntActionType;
-
-
-
-
-
 
 public class ClientRandomWalk
 /********************************************/
@@ -44,6 +37,7 @@ public class ClientRandomWalk
   private static final long password = 662985659947L;
   private ObjectInputStream inputStream = null;
   private ObjectOutputStream outputStream = null;
+  private Dashboard mainFrame = null;
   private boolean isConnected = false;
   private NestNameEnum myNestName = null;
   private int centerX, centerY;
@@ -63,6 +57,7 @@ public class ClientRandomWalk
       if (!isConnected) try { Thread.sleep(1000); } catch (InterruptedException e1) {}
     }
     CommData data = chooseNest();
+    mainFrame = new Dashboard(data);
     mainGameLoop(data);
     closeAll();
   }
@@ -180,10 +175,17 @@ public class ClientRandomWalk
 
         CommData sendData = data.packageForSendToServer();
         
+        //Resets password to 0 for internet security
+        sendData.password = 0;
+        
         //System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
         outputStream.writeObject(sendData);
         outputStream.flush();
         outputStream.reset();
+        // Create an instance of the test application
+        mainFrame.updateGrid(data);
+        mainFrame.setVisible( true );
+      
        
 
         if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
@@ -274,8 +276,10 @@ public class ClientRandomWalk
     
     if (args.length > 0) serverHost = args[0];
     
-    new ClientRandomWalk(serverHost, Constants.PORT);
+    new ClientRandomWalk(serverHost, Constants.PORT); // Create an instance of the test application
+ 
+    
+    
   }
 
 }
-
