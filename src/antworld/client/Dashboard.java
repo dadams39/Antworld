@@ -1,14 +1,22 @@
 package antworld.client;
 
+/************************************************/
+/* Dashboard <Class>                            */
+/* @ author: Danny Adams                        */
+/* @ modified by CS351 Team.                    */
+/*   Created September 1, 2014                  */
+/*   Updated September 2, 2014                  */
+/*   package: antworld                          */
+/*   Allows for the visualization of ants       */
+/*   coordinates within the visual world.       */
+/************************************************/ 
+
 import java.awt.*;
-import java.awt.event.*;
-
 import javax.swing.*;
-
-import antworld.data.AntAction;
 import antworld.data.AntData;
 import antworld.data.CommData;
 
+@SuppressWarnings("serial")
 public class Dashboard  extends JFrame
 {
   // Instance attributes used in this example
@@ -85,13 +93,14 @@ public class Dashboard  extends JFrame
     topPanel.add( scrollPane, BorderLayout.CENTER );
 
   }
-  public void updateGrid(CommData commData)
+  
+  public void updateTable(CommData commData)
+  
   {
     this.topPanel = new JPanel();
     this.topPanel.setLayout( new BorderLayout());
     this.getContentPane().add( topPanel );
-
-    // Create columns names
+  
     String columnNames[] = { "Ant_Name", "X Coord.", "Y Coord." };
 
     int column = commData.myAntList.size();
@@ -110,6 +119,7 @@ public class Dashboard  extends JFrame
 
     // Add the table to a scrolling pane
     scrollPane = new JScrollPane( table );
+    scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS); 
     topPanel.add( scrollPane, BorderLayout.CENTER );
     
   }
