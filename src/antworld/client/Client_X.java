@@ -14,7 +14,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Random;
-
 import antworld.data.AntAction;
 import antworld.data.AntData;
 import antworld.data.CommData;
@@ -24,7 +23,7 @@ import antworld.data.NestNameEnum;
 import antworld.data.TeamNameEnum;
 import antworld.data.AntAction.AntActionType;
 
-public class ClientRandomWalk
+public class Client_X
 /********************************************/
 /* Status: Network Connection Established   */
 /* Artificial Intelligence: Non-Functional  */
@@ -33,6 +32,7 @@ public class ClientRandomWalk
 /********************************************/
 {
   private static final boolean DEBUG = true;
+  private static final boolean WANT_VISUAL = true;
   private static final TeamNameEnum myTeam = TeamNameEnum.Antithesis;
   private static final long password = 662985659947L;
   private ObjectInputStream inputStream = null;
@@ -47,15 +47,15 @@ public class ClientRandomWalk
 
   private static Random random = Constants.random;
 
-  public ClientRandomWalk(String host, int portNumber)
+  public Client_X(String host, int portNumber)
   /************************************************/
-  /* ClientRandomWalk(String host, int portNumber */
+  /* Client_X(String host, int portNumber */
   /* @ author: Joel Castellanos                   */
   /* @ param: String host, int port               */
   /*   Basic constructor for Antworld Project     */
   /************************************************/ 
   {
-    System.out.println("Starting ClientRandomWalk: " + System.currentTimeMillis());
+    System.out.println("Starting Client_X: " + System.currentTimeMillis());
     isConnected = false;
     refreshCounter = 0;
     while (!isConnected)
@@ -64,7 +64,10 @@ public class ClientRandomWalk
       if (!isConnected) try { Thread.sleep(1000); } catch (InterruptedException e1) {}
     }
     CommData data = chooseNest();
-    mainFrame = new Dashboard(data);
+    if(WANT_VISUAL)
+    {
+      mainFrame = new Dashboard(data);
+    }
     mainGameLoop(data);
     closeAll();
   }
@@ -84,13 +87,13 @@ public class ClientRandomWalk
     }
     catch (UnknownHostException e)
     {
-      System.err.println("ClientRandomWalk Error: Unknown Host " + host);
+      System.err.println("Client_X Error: Unknown Host " + host);
       e.printStackTrace();
       return false;
     }
     catch (IOException e)
     {
-      System.err.println("ClientRandomWalk Error: Could not open connection to " + host + " on port " + portNumber);
+      System.err.println("Client_X Error: Could not open connection to " + host + " on port " + portNumber);
       e.printStackTrace();
       return false;
     }
@@ -103,7 +106,7 @@ public class ClientRandomWalk
     }
     catch (IOException e)
     {
-      System.err.println("ClientRandomWalk Error: Could not open i/o streams");
+      System.err.println("Client_X Error: Could not open i/o streams");
       e.printStackTrace();
       return false;
     }
@@ -118,7 +121,7 @@ public class ClientRandomWalk
   /*   Method closes out connection to server/game*/
   /************************************************/ 
   {
-    System.out.println("ClientRandomWalk.closeAll()");
+    System.out.println("Client_X.closeAll()");
     {
       try
       {
@@ -128,7 +131,7 @@ public class ClientRandomWalk
       }
       catch (IOException e)
       {
-        System.err.println("ClientRandomWalk Error: Could not close");
+        System.err.println("Client_X Error: Could not close");
         e.printStackTrace();
       }
     }
@@ -154,13 +157,13 @@ public class ClientRandomWalk
       {
         try
         {
-          if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
+          if (DEBUG) System.out.println("Client_X: listening to socket....");
           CommData recvData = (CommData) inputStream.readObject();
-          if (DEBUG) System.out.println("ClientRandomWalk: recived <<<<<<<<<"+inputStream.available()+"<...\n" + recvData);
+          if (DEBUG) System.out.println("Client_X: recived <<<<<<<<<"+inputStream.available()+"<...\n" + recvData);
 
           if (recvData.errorMsg != null)
           {
-            System.err.println("ClientRandomWalk***ERROR***: " + recvData.errorMsg);
+            System.err.println("Client_X***ERROR***: " + recvData.errorMsg);
             continue;
           }
 
@@ -168,18 +171,18 @@ public class ClientRandomWalk
           { myNestName = recvData.myNest;
           centerX = recvData.nestData[myNestName.ordinal()].centerX;
           centerY = recvData.nestData[myNestName.ordinal()].centerY;
-          System.out.println("ClientRandomWalk: !!!!!Nest Request Accepted!!!! " + myNestName);
+          System.out.println("Client_X: !!!!!Nest Request Accepted!!!! " + myNestName);
           return recvData;
           }
         }
         catch (IOException e)
         {
-          System.err.println("ClientRandomWalk***ERROR***: client read failed");
+          System.err.println("Client_X***ERROR***: client read failed");
           e.printStackTrace();
         }
         catch (ClassNotFoundException e)
         {
-          System.err.println("ClientRandomWalk***ERROR***: client sent incorect data format");
+          System.err.println("Client_X***ERROR***: client sent incorect data format");
         }
       }
     }
@@ -210,37 +213,39 @@ public class ClientRandomWalk
 
         //Resets password to 0 for internet security
         sendData.password = 0;
-        
 
-        //System.out.println("ClientRandomWalk: Sending>>>>>>>: " + sendData);
+
+        //System.out.println("Client_X: Sending>>>>>>>: " + sendData);
         outputStream.writeObject(sendData);
         outputStream.flush();
         outputStream.reset();
-        
-        //Displays Table for Ant Tracking
-        if(refreshCounter % refreshRate == 0)
-        {
-          mainFrame.updateTable(data);
-          mainFrame.setVisible (true);
-          refreshCounter = 0;
-        }
-        
-        refreshCounter++;
 
-        if (DEBUG) System.out.println("ClientRandomWalk: listening to socket....");
+        //Displays Table for Ant Tracking
+        if(WANT_VISUAL)
+        {
+          if(refreshCounter % refreshRate == 0)
+          {
+            mainFrame.updateTable(data);
+            mainFrame.setVisible (true);
+            refreshCounter = 0;
+          }
+
+          refreshCounter++;
+        }
+        if (DEBUG) System.out.println("Client_X: listening to socket....");
         CommData recivedData = (CommData) inputStream.readObject();
-        if (DEBUG) System.out.println("ClientRandomWalk: received <<<<<<<<<"+inputStream.available()+"<...\n" + recivedData);
+        if (DEBUG) System.out.println("Client_X: received <<<<<<<<<"+inputStream.available()+"<...\n" + recivedData);
         data = recivedData;
         if (DEBUG) System.out.println("refreshCounter:" + Integer.toString(refreshCounter));
 
         if ((myNestName == null) || (data.myTeam != myTeam))
         {
-          System.err.println("ClientRandomWalk: !!!!ERROR!!!! " + myNestName);
+          System.err.println("Client_X: !!!!ERROR!!!! " + myNestName);
         }
       }
       catch (IOException e)
       {
-        System.err.println("ClientRandomWalk***ERROR***: client read failed");
+        System.err.println("Client_X***ERROR***: client read failed");
         e.printStackTrace();
         try { Thread.sleep(1000); } catch (InterruptedException e1) {}
 
@@ -262,14 +267,14 @@ public class ClientRandomWalk
     CommData sendData = data.packageForSendToServer();
     try
     {
-      if (DEBUG) System.out.println("ClientRandomWalk.sendCommData(" + sendData +")");
+      if (DEBUG) System.out.println("Client_X.sendCommData(" + sendData +")");
       outputStream.writeObject(sendData);
       outputStream.flush();
       outputStream.reset();
     }
     catch (IOException e)
     {
-      System.err.println("ClientRandomWalk***ERROR***: client read failed");
+      System.err.println("Client_X***ERROR***: client read failed");
       e.printStackTrace();
       try { Thread.sleep(1000); } catch (InterruptedException e1) {}
       return false;
@@ -320,15 +325,9 @@ public class ClientRandomWalk
 
   public static void main(String[] args)
   {
-
     String serverHost = "b146-75";
 
-    if (args.length > 0) serverHost = args[0];
-
-    new ClientRandomWalk(serverHost, Constants.PORT); // Create an instance of the test application
-
-
-
+    if (args.length > 0){ serverHost = args[0];}
+    new Client_X(serverHost, Constants.PORT); // Create an instance of the test application
   }
-
 }
